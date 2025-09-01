@@ -11,13 +11,13 @@ const Footer = () => {
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-hero-gradient rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">S</span>
+                <span className="text-white font-bold text-lg">J</span>
               </div>
-              <span className="font-bold text-xl">StyleHub</span>
+              <span className="font-bold text-xl">Jugglers</span>
             </Link>
             <p className="text-muted-foreground text-sm">
               Bringing you affordable, style-inspired fashion for the modern Indian wardrobe. 
-              Quality clothing at prices that make sense.
+              Quality clothing at juggler-level prices that make sense.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
@@ -94,7 +94,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-primary flex-shrink-0" />
-                <p className="text-muted-foreground text-sm">help@stylehub.in</p>
+                <p className="text-muted-foreground text-sm">help@jugglers.in</p>
               </div>
             </div>
           </div>
@@ -114,7 +114,7 @@ const Footer = () => {
               </Link>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 StyleHub. All rights reserved. Made in India 🇮🇳
+              © 2024 Jugglers. All rights reserved. Made in India 🇮🇳
             </p>
           </div>
         </div>

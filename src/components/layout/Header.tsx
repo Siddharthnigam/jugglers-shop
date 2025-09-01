@@ -53,9 +53,9 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-hero-gradient rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+              <span className="text-white font-bold text-lg">J</span>
             </div>
-            <span className="font-bold text-xl">StyleHub</span>
+            <span className="font-bold text-xl">Jugglers</span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -120,32 +120,25 @@ All colors MUST be HSL. Theme: White, Black, Orange (#ff6a00), Blue (#2563eb)
 }
 
 @layer components {
-  /* Button variants using design system */
-  .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary-hover px-6 py-3 rounded-lg font-medium transition-colors;
-  }
-  
-  .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 px-6 py-3 rounded-lg font-medium transition-colors border border-border;
-  }
-  
-  .btn-accent {
-    @apply bg-accent text-accent-foreground hover:bg-accent-hover px-6 py-3 rounded-lg font-medium transition-colors;
-  }
-
   /* Product card styling */
   .product-card {
-    @apply bg-card rounded-lg overflow-hidden transition-transform duration-200 hover:scale-[1.02];
+    background: hsl(var(--card));
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--card-shadow);
   }
   
   .product-card:hover {
+    transform: scale(1.02);
     box-shadow: var(--card-shadow-hover);
   }
 
   /* Price styling */
   .price-original {
-    @apply text-sm line-through;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    text-decoration-line: line-through;
     color: hsl(var(--price-original));
   }
   
@@ -155,15 +148,24 @@ All colors MUST be HSL. Theme: White, Black, Orange (#ff6a00), Blue (#2563eb)
 
   /* Container utilities */
   .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-
-  /* Animation utilities */
-  .fade-in {
-    @apply opacity-0 animate-in fade-in duration-500;
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
   
-  .slide-up {
-    @apply translate-y-4 animate-in slide-in-from-bottom duration-500;
+  @media (min-width: 640px) {
+    .container-custom {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .container-custom {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
   }
 }
