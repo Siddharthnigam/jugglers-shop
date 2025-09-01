@@ -25,8 +25,7 @@ export const CATEGORIES = [
   'T-Shirts', 
   'Jeans',
   'Jackets',
-  'Dresses',
-  'Shoes'
+  'Dresses'
 ];
 
 export const SAMPLE_PRODUCTS: Product[] = [
@@ -145,29 +144,6 @@ export const SAMPLE_PRODUCTS: Product[] = [
     isNew: true
   },
   {
-    id: '6',
-    name: 'Canvas Sneakers',
-    slug: 'canvas-sneakers',
-    category: 'Shoes',
-    images: [
-      'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&h=800&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&h=800&fit=crop&crop=top'
-    ],
-    shortDescription: 'Comfortable canvas sneakers for daily wear',
-    longDescription: 'Classic canvas sneakers with rubber sole and comfortable fit. Features durable canvas upper, padded collar, and versatile design suitable for various casual occasions.',
-    price: 1199,
-    mrp: 1699,
-    discountPercent: 29,
-    sizes: ['6', '7', '8', '9', '10', '11'],
-    stock: { '6': 5, '7': 8, '8': 12, '9': 15, '10': 10, '11': 6 },
-    brandInspiration: 'Inspired by classic sneaker brands',
-    rating: 4.1,
-    reviewCount: 128,
-    tags: ['shoes', 'sneakers', 'canvas', 'casual'],
-    isActive: true,
-    isFeatured: true
-  },
-  {
     id: '7',
     name: 'Formal White Shirt',
     slug: 'formal-white-shirt',
@@ -274,28 +250,6 @@ export const SAMPLE_PRODUCTS: Product[] = [
     isActive: true,
     isFeatured: true
   },
-  {
-    id: '12',
-    name: 'Running Shoes',
-    slug: 'running-shoes',
-    category: 'Shoes',
-    images: [
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=800&fit=crop&crop=center'
-    ],
-    shortDescription: 'Performance running shoes with comfort technology',
-    longDescription: 'High-performance running shoes designed for comfort and support. Features advanced cushioning, breathable mesh upper, and durable rubber outsole. Perfect for running and athletic activities.',
-    price: 2999,
-    mrp: 4299,
-    discountPercent: 30,
-    sizes: ['6', '7', '8', '9', '10', '11', '12'],
-    stock: { '6': 4, '7': 8, '8': 12, '9': 15, '10': 12, '11': 8, '12': 5 },
-    brandInspiration: 'Inspired by leading athletic brands',
-    rating: 4.4,
-    reviewCount: 186,
-    tags: ['running', 'athletic', 'performance', 'comfort'],
-    isActive: true,
-    isNew: true
-  }
 ];
 
 export const getFeaturedProducts = () => SAMPLE_PRODUCTS.filter(p => p.isFeatured);

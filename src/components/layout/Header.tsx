@@ -88,6 +88,18 @@ const Header = () => {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+            <Link 
+              to="/about" 
+              className="text-foreground hover:text-primary transition-colors font-medium"
+            >
+              About
+            </Link>
+            <Link 
+              to="/contact" 
+              className="text-foreground hover:text-primary transition-colors font-medium"
+            >
+              Contact
+            </Link>
           </nav>
 
           {/* Search Bar */}
@@ -239,6 +251,20 @@ const Header = () => {
                       {category}
                     </Link>
                   ))}
+                  <Link
+                    to="/about"
+                    className="px-3 py-2 text-foreground hover:bg-accent rounded-md transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    About
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className="px-3 py-2 text-foreground hover:bg-accent rounded-md transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Contact
+                  </Link>
                 </nav>
 
                 {/* Mobile Auth */}
