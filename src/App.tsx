@@ -16,7 +16,7 @@ import Checkout from "./pages/Checkout";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Profile from "./pages/Profile";
-import Orders from "./pages/Orders";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import About from "./pages/About";
 import FAQ from "./pages/FAQ";
 import Contact from "./pages/Contact";
@@ -45,7 +45,7 @@ const App = () => (
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/profile" element={<Profile />} />
-                  <Route path="/orders" element={<Orders />} />
+                  <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/contact" element={<Contact />} />
