@@ -7,13 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'react-hot-toast';
 
 const Checkout = () => {
   const { items, totalPrice, totalItems, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -28,9 +30,9 @@ const Checkout = () => {
     paymentMethod: 'cod'
   });
 
-  const formatPrice = (price: number) => `₹${price.toLocaleString('en-IN')}`;
+  const formatPrice = (price: number) => `₹${price.toFixed(2)}`;
   const subtotal = totalPrice;
-  const tax = Math.round(subtotal * 0.18);
+  const tax = subtotal * 0.08;
   const total = subtotal + tax;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,28 +47,54 @@ const Checkout = () => {
     return requiredFields.every(field => formData[field as keyof typeof formData]);
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
-      toast({
-        title: "Please fill all required fields",
-        variant: "destructive",
-      });
+    if (!user) {
+      toast.error('Please login to place order');
+      navigate('/login');
       return;
     }
-
-    // Simulate order placement
-    const orderId = `JUG${Date.now()}`;
-    toast({
-      title: "Order placed successfully!",
-      description: `Your order #${orderId} has been confirmed.`,
-    });
     
-    clearCart();
-    navigate(`/order-confirmation/${orderId}`, { 
-      state: { orderData: { ...formData, orderId, total, items } }
-    });
+    if (!validateForm()) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const orderData = {
+        items: items.map(item => ({
+          productId: item.productId.toString(),
+          quantity: item.quantity.toString()
+        })),
+        shipping_address: `${formData.address1}, ${formData.address2 ? formData.address2 + ', ' : ''}${formData.city}, ${formData.state} ${formData.pincode}`
+      };
+      
+      const response = await fetch('http://127.0.0.1:8000/api/orders/create/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        clearCart();
+        toast.success('Order placed successfully!');
+        navigate(`/order-confirmation/${result.order_id}`);
+      } else {
+        toast.error('Failed to place order');
+      }
+    } catch (error) {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   if (items.length === 0) {
@@ -270,7 +298,7 @@ const Checkout = () => {
                     {/* Items */}
                     <div className="space-y-3">
                       {items.map((item) => (
-                        <div key={`${item.productId}-${item.size}`} className="flex gap-3">
+                        <div key={item.id} className="flex gap-3">
                           <div className="w-12 h-12 bg-muted rounded overflow-hidden">
                             <img
                               src={item.image}
@@ -281,7 +309,7 @@ const Checkout = () => {
                           <div className="flex-1">
                             <p className="text-sm font-medium">{item.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              Size: {item.size} | Qty: {item.quantity}
+                              Qty: {item.quantity}
                             </p>
                             <p className="text-sm font-semibold">
                               {formatPrice(item.price * item.quantity)}
@@ -304,7 +332,7 @@ const Checkout = () => {
                         <span className="text-green-600">FREE</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span>GST (18%)</span>
+                        <span>Tax (8%)</span>
                         <span>{formatPrice(tax)}</span>
                       </div>
                       <hr />
@@ -314,8 +342,8 @@ const Checkout = () => {
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full" size="lg">
-                      Place Order - {formatPrice(total)}
+                    <Button type="submit" className="w-full" size="lg" disabled={isProcessing}>
+                      {isProcessing ? 'Processing...' : `Place Order - ${formatPrice(total)}`}
                     </Button>
 
                     <p className="text-xs text-muted-foreground text-center">

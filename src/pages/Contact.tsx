@@ -55,19 +55,19 @@ const Contact = () => {
     {
       icon: Mail,
       title: 'Email Us',
-      details: 'help@jugglers.in',
+      details: 'jugglersshop@gmail.com',
       description: 'Send us an email anytime'
     },
     {
       icon: Phone,
       title: 'Call Us',
-      details: '+91 98765 43210',
+      details: '+91 7415159952',
       description: 'Mon-Sat, 9 AM to 7 PM'
     },
     {
       icon: MapPin,
       title: 'Visit Us',
-      details: 'Mumbai, Maharashtra',
+      details: 'Ujjain, Madhya Pradesh',
       description: 'Online store serving all of India'
     },
     {

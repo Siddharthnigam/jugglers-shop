@@ -5,11 +5,21 @@ import { ArrowRight, Star, Truck, Shield, RefreshCw, Sparkles } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import ProductCard from '@/components/products/ProductCard';
-import { getFeaturedProducts, getNewProducts, CATEGORIES } from '@/data/products';
+import { api, type Product } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
 
 const Index = () => {
-  const featuredProducts = getFeaturedProducts();
-  const newProducts = getNewProducts();
+  const { data: featuredProducts = [] } = useQuery({
+    queryKey: ['featured-products'],
+    queryFn: api.getFeaturedProducts
+  });
+  
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.getProducts
+  });
+  
+  const CATEGORIES = ['T-Shirts', 'Jackets', 'Jeans', 'Shirts', 'Dresses', 'Hoodies'];
 
   return (
     <div className="min-h-screen">
@@ -268,11 +278,12 @@ const Index = () => {
                   <div className="bg-card rounded-xl p-6 text-center hover:shadow-card-hover transition-all duration-300 border">
                     <div className="w-12 h-12 bg-primary-light rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
                       <span className="text-2xl group-hover:text-white">
-                        {category === 'Shirts' && '👔'}
                         {category === 'T-Shirts' && '👕'}
-                        {category === 'Jeans' && '👖'}
                         {category === 'Jackets' && '🧥'}
+                        {category === 'Jeans' && '👖'}
+                        {category === 'Shirts' && '👔'}
                         {category === 'Dresses' && '👗'}
+                        {category === 'Hoodies' && '🧥'}
                       </span>
                     </div>
                     <h3 className="font-semibold group-hover:text-primary transition-colors">
@@ -342,7 +353,7 @@ const Index = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {newProducts.slice(0, 4).map((product, index) => (
+            {allProducts.slice(0, 4).map((product, index) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}

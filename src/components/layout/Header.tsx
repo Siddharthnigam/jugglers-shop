@@ -24,7 +24,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { CATEGORIES } from '@/data/products';
+const CATEGORIES = ['T-Shirts', 'Jackets', 'Jeans', 'Shirts', 'Dresses', 'Hoodies'];
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -49,13 +49,13 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
       <div className="container-custom">
-        <div className="flex items-center justify-between h-nav">
+        <div className="flex items-center gap-5 justify-between h-nav">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-hero-gradient rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">J</span>
             </div>
-            <span className="font-bold text-xl">Jugglers</span>
+            <span className="font-bold text-xl ">Jugglers</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -160,7 +160,7 @@ const Header = () => {
                       Wishlist
                     </Link>
                   </DropdownMenuItem>
-                  {user.isStaff && (
+                  {user.role === 'admin' && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>

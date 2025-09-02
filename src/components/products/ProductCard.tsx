@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'react-hot-toast';
-import type { Product } from '@/data/products';
+import type { Product } from '@/lib/api';
 
 interface ProductCardProps {
   product: Product;
@@ -20,24 +20,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
     e.preventDefault();
     e.stopPropagation();
     
-    // Find the first available size
-    const availableSize = product.sizes.find(size => (product.stock[size] || 0) > 0);
-    
-    if (!availableSize) {
+    if (product.stock <= 0) {
       toast.error('Product is out of stock');
       return;
     }
 
     addToCart({
-      id: `${product.id}-${availableSize}`,
+      id: `${product.id}`,
       productId: product.id,
       name: product.name,
-      slug: product.slug,
       price: product.price,
-      mrp: product.mrp,
-      size: availableSize,
-      image: product.images[0],
-      maxStock: product.stock[availableSize] || 0
+      image: product.image,
+      maxStock: product.stock
     });
   };
 
@@ -49,7 +43,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
     }).format(price);
   };
 
-  const isOutOfStock = !product.sizes.some(size => (product.stock[size] || 0) > 0);
+  const isOutOfStock = product.stock <= 0;
 
   if (viewMode === 'list') {
     return (
@@ -57,21 +51,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
         whileHover={{ y: -4 }}
         className="product-card flex flex-col md:flex-row p-4 h-auto"
       >
-        <Link to={`/product/${product.slug}`} className="flex flex-col md:flex-row flex-1 gap-4">
+        <Link to={`/product/${product.id}`} className="flex flex-col md:flex-row flex-1 gap-4">
           <div className="relative w-full md:w-48 h-48 md:h-32 flex-shrink-0">
             <img
-              src={product.images[0]}
+              src={product.image}
               alt={product.name}
               className="w-full h-full object-cover rounded-lg"
               loading="lazy"
             />
-            {product.isNew && (
-              <Badge className="absolute top-2 left-2 bg-success">New</Badge>
-            )}
-            {product.discountPercent && (
-              <Badge className="absolute top-2 right-2 bg-destructive">
-                -{product.discountPercent}%
-              </Badge>
+            {product.featured && (
+              <Badge className="absolute top-2 left-2 bg-success">Featured</Badge>
             )}
           </div>
 
@@ -79,44 +68,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
             <div>
               <h3 className="font-semibold text-lg line-clamp-1">{product.name}</h3>
               <p className="text-muted-foreground text-sm line-clamp-2">
-                {product.shortDescription}
+                {product.description}
               </p>
-              {product.brandInspiration && (
-                <p className="text-xs text-muted-foreground italic">
-                  {product.brandInspiration}
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground">
+                Category: {product.category}
+              </p>
             </div>
 
             <div className="flex items-center gap-1">
-              <div className="flex items-center">
-                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-sm font-medium ml-1">{product.rating}</span>
-              </div>
               <span className="text-sm text-muted-foreground">
-                ({product.reviewCount})
+                Stock: {product.stock}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold">{formatPrice(product.price)}</span>
-              {product.mrp && (
-                <span className="price-original">{formatPrice(product.mrp)}</span>
-              )}
+              <span className="text-xl font-bold">₹{product.price}</span>
             </div>
 
-            <div className="flex flex-wrap gap-1">
-              {product.sizes.slice(0, 4).map(size => (
-                <Badge key={size} variant="outline" className="text-xs">
-                  {size}
-                </Badge>
-              ))}
-              {product.sizes.length > 4 && (
-                <Badge variant="outline" className="text-xs">
-                  +{product.sizes.length - 4}
-                </Badge>
-              )}
-            </div>
+
           </div>
         </Link>
 
@@ -148,10 +117,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
       whileHover={{ y: -4 }}
       className="product-card group relative"
     >
-      <Link to={`/product/${product.slug}`}>
+      <Link to={`/product/${product.id}`}>
         <div className="relative aspect-[3/4] mb-3 overflow-hidden rounded-lg">
           <img
-            src={product.images[0]}
+            src={product.image}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
@@ -159,19 +128,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
           
           {/* Badges */}
           <div className="absolute top-2 left-2 space-y-1">
-            {product.isNew && (
-              <Badge className="bg-success">New</Badge>
-            )}
-            {product.isFeatured && (
+            {product.featured && (
               <Badge className="bg-accent">Featured</Badge>
             )}
           </div>
-          
-          {product.discountPercent && (
-            <Badge className="absolute top-2 right-2 bg-destructive">
-              -{product.discountPercent}%
-            </Badge>
-          )}
 
           {/* Overlay Actions */}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -204,44 +164,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, viewMode = 'grid' })
               {product.name}
             </h3>
             <p className="text-muted-foreground text-sm line-clamp-1">
-              {product.shortDescription}
+              {product.description}
             </p>
-            {product.brandInspiration && (
-              <p className="text-xs text-muted-foreground italic line-clamp-1">
-                {product.brandInspiration}
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground">
+              {product.category}
+            </p>
           </div>
 
           <div className="flex items-center gap-1 text-sm">
-            <div className="flex items-center">
-              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-              <span className="font-medium ml-1">{product.rating}</span>
-            </div>
             <span className="text-muted-foreground">
-              ({product.reviewCount})
+              Stock: {product.stock}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold">{formatPrice(product.price)}</span>
-            {product.mrp && (
-              <span className="price-original text-sm">{formatPrice(product.mrp)}</span>
-            )}
+            <span className="text-lg font-bold">₹{product.price}</span>
           </div>
 
-          <div className="flex flex-wrap gap-1">
-            {product.sizes.slice(0, 3).map(size => (
-              <Badge key={size} variant="outline" className="text-xs">
-                {size}
-              </Badge>
-            ))}
-            {product.sizes.length > 3 && (
-              <Badge variant="outline" className="text-xs">
-                +{product.sizes.length - 3}
-              </Badge>
-            )}
-          </div>
+
         </div>
       </Link>
     </motion.div>

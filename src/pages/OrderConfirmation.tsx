@@ -12,7 +12,7 @@ const OrderConfirmation = () => {
   
   const orderData = location.state?.orderData;
 
-  const formatPrice = (price: number) => `₹${price.toLocaleString('en-IN')}`;
+  const formatPrice = (price: number) => `₹${price.toFixed(2)}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -25,7 +25,7 @@ const OrderConfirmation = () => {
           <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
           <h1 className="text-3xl font-bold mb-2">Order Confirmed!</h1>
           <p className="text-muted-foreground mb-8">
-            Thank you for your order. We'll send you a confirmation email shortly.
+            Thank you for your order #{orderId}. We'll send you a confirmation email shortly.
           </p>
 
           {orderData && (

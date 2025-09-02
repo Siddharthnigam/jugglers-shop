@@ -10,7 +10,7 @@ const Cart = () => {
   const { items, updateQuantity, removeFromCart, totalPrice, totalItems } = useCart();
   const navigate = useNavigate();
 
-  const formatPrice = (price: number) => `₹${price.toLocaleString('en-IN')}`;
+  const formatPrice = (price: number | string) => `₹${(typeof price === 'string' ? parseFloat(price) : price).toFixed(2)}`;
 
   if (items.length === 0) {
     return (
@@ -49,7 +49,7 @@ const Cart = () => {
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
                 <motion.div
-                  key={`${item.productId}-${item.size}`}
+                  key={item.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
@@ -67,14 +67,14 @@ const Cart = () => {
                         
                         <div className="flex-1">
                           <h3 className="font-semibold">{item.name}</h3>
-                          <p className="text-sm text-muted-foreground">Size: {item.size}</p>
+                          <p className="text-sm text-muted-foreground">Stock: {item.maxStock}</p>
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center gap-2">
                               <Button
                                 variant="outline"
                                 size="icon"
                                 className="w-8 h-8"
-                                onClick={() => updateQuantity(`${item.productId}-${item.size}`, Math.max(1, item.quantity - 1))}
+                                onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                               >
                                 <Minus className="w-3 h-3" />
                               </Button>
@@ -83,7 +83,7 @@ const Cart = () => {
                                 variant="outline"
                                 size="icon"
                                 className="w-8 h-8"
-                                onClick={() => updateQuantity(`${item.productId}-${item.size}`, item.quantity + 1)}
+                                onClick={() => updateQuantity(item.id, Math.min(item.maxStock, item.quantity + 1))}
                               >
                                 <Plus className="w-3 h-3" />
                               </Button>
@@ -100,7 +100,7 @@ const Cart = () => {
                           variant="ghost"
                           size="icon"
                           className="text-muted-foreground hover:text-destructive"
-                          onClick={() => removeFromCart(`${item.productId}-${item.size}`)}
+                          onClick={() => removeFromCart(item.id)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -128,12 +128,12 @@ const Cart = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Tax (estimated)</span>
-                      <span>{formatPrice(Math.round(totalPrice * 0.18))}</span>
+                      <span>{formatPrice(totalPrice * 0.08)}</span>
                     </div>
                     <hr />
                     <div className="flex justify-between font-semibold text-lg">
                       <span>Total</span>
-                      <span>{formatPrice(totalPrice + Math.round(totalPrice * 0.18))}</span>
+                      <span>{formatPrice(totalPrice + (totalPrice * 0.08))}</span>
                     </div>
                   </div>
 
@@ -169,7 +169,7 @@ const Cart = () => {
 
                   <div className="mt-6 text-center">
                     <p className="text-xs text-muted-foreground">
-                      Free delivery on orders above ₹999
+                      Free delivery on orders above $50
                     </p>
                   </div>
                 </CardContent>

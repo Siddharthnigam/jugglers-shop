@@ -8,17 +8,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import ProductCard from '@/components/products/ProductCard';
-import { SAMPLE_PRODUCTS, CATEGORIES, searchProducts } from '@/data/products';
-import type { Product } from '@/data/products';
+import { api, type Product } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
 
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<Product[]>(SAMPLE_PRODUCTS);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState('popularity');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'All');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  
+  const { data: allProducts = [], isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.getProducts
+  });
+  
+  const [products, setProducts] = useState<Product[]>([]);
+  const CATEGORIES = ['T-Shirts', 'Jackets', 'Jeans', 'Shirts', 'Dresses', 'Hoodies'];
 
   useEffect(() => {
     const category = searchParams.get('category');
@@ -29,7 +36,20 @@ const Shop = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    let filtered = searchProducts(searchQuery, selectedCategory === 'All' ? undefined : selectedCategory);
+    let filtered = allProducts;
+    
+    // Filter by search
+    if (searchQuery) {
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // Filter by category
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(p => p.category === selectedCategory);
+    }
     
     // Filter by price range
     filtered = filtered.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
@@ -41,17 +61,13 @@ const Shop = () => {
           return a.price - b.price;
         case 'price-high':
           return b.price - a.price;
-        case 'rating':
-          return b.rating - a.rating;
-        case 'newest':
-          return b.isNew ? 1 : -1;
         default:
-          return b.rating * b.reviewCount - a.rating * a.reviewCount; // popularity
+          return a.id - b.id; // default order
       }
     });
     
     setProducts(filtered);
-  }, [searchQuery, selectedCategory, priceRange, sortBy]);
+  }, [allProducts, searchQuery, selectedCategory, priceRange, sortBy]);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
@@ -218,7 +234,11 @@ const Shop = () => {
 
         {/* Products Grid */}
         <div className="flex-1">
-          {products.length > 0 ? (
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="text-2xl">Loading products...</div>
+            </div>
+          ) : products.length > 0 ? (
             <motion.div
               layout
               className={`grid gap-6 ${

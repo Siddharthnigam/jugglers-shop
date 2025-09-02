@@ -2,18 +2,19 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface User {
-  id: string;
+  id: number;
+  username: string;
   email: string;
-  name: string;
-  phone?: string;
-  isStaff?: boolean;
+  first_name: string;
+  last_name: string;
+  role: 'user' | 'admin';
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, name: string, phone?: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<boolean>;
+  register: (username: string, email: string, password: string, firstName: string, lastName: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -32,7 +33,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Simulate checking for existing session on mount
   useEffect(() => {
     const checkAuth = () => {
       const storedUser = localStorage.getItem('user');
@@ -44,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (error) {
           localStorage.removeItem('user');
           localStorage.removeItem('token');
+          localStorage.removeItem('refresh_token');
         }
       }
       setLoading(false);
@@ -52,62 +53,74 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (username: string, password: string): Promise<boolean> => {
     try {
       setLoading(true);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful login
-      const mockUser: User = {
-        id: '1',
-        email,
-        name: email.split('@')[0],
-        isStaff: email.includes('admin')
-      };
+      const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-      const mockToken = 'mock-jwt-token-' + Date.now();
-
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('token', mockToken);
-      setUser(mockUser);
-      
-      toast.success('Login successful!');
-      return true;
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setUser(data.user);
+        toast.success('Login successful!');
+        return true;
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.detail || 'Login failed');
+        return false;
+      }
     } catch (error) {
-      toast.error('Login failed. Please try again.');
+      toast.error('Network error. Please try again.');
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (email: string, password: string, name: string, phone?: string): Promise<boolean> => {
+  const register = async (username: string, email: string, password: string, firstName: string, lastName: string): Promise<boolean> => {
     try {
       setLoading(true);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful registration
-      const mockUser: User = {
-        id: Date.now().toString(),
-        email,
-        name,
-        phone
-      };
+      const response = await fetch('http://127.0.0.1:8000/api/auth/register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          first_name: firstName,
+          last_name: lastName
+        }),
+      });
 
-      const mockToken = 'mock-jwt-token-' + Date.now();
-
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('token', mockToken);
-      setUser(mockUser);
-      
-      toast.success('Registration successful!');
-      return true;
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setUser(data.user);
+        toast.success('Registration successful!');
+        return true;
+      } else {
+        const errorData = await response.json();
+        const errorMessage = errorData.errors ? 
+          errorData.errors.map((err: any) => err.msg).join(', ') : 
+          'Registration failed';
+        toast.error(errorMessage);
+        return false;
+      }
     } catch (error) {
-      toast.error('Registration failed. Please try again.');
+      toast.error('Network error. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -117,6 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
     setUser(null);
     toast.success('Logged out successfully');
   };

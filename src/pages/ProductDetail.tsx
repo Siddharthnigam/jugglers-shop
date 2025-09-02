@@ -1,28 +1,54 @@
-import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, Heart, Share2, ShoppingCart, Truck, Shield, RotateCcw } from 'lucide-react';
+import { Star, Heart, Share2, ShoppingCart, Truck, Shield, RotateCcw, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
-import { useToast } from '@/hooks/use-toast';
-import { getProductBySlug, SAMPLE_PRODUCTS } from '@/data/products';
+import { useAuth } from '@/contexts/AuthContext';
+import { api, type Product } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
+import { useState, useEffect } from 'react';
 
 const ProductDetail = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { toast } = useToast();
-  const [selectedSize, setSelectedSize] = useState<string>('');
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const { user } = useAuth();
   const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
-  const product = slug ? getProductBySlug(slug) : null;
+  const { data: product, isLoading, error } = useQuery({
+    queryKey: ['product', id],
+    queryFn: () => api.getProduct(Number(id)),
+    enabled: !!id,
+    retry: 1
+  });
 
-  if (!product) {
+  console.log('Product ID:', id);
+  console.log('Product data:', product);
+  console.log('Loading:', isLoading);
+  console.log('Error:', error);
+
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: api.getProducts
+  });
+
+  if (isLoading) {
     return (
       <div className="container-custom py-16 text-center">
-        <h1 className="text-2xl font-bold text-muted-foreground">Product Not Found</h1>
+        <h1 className="text-2xl font-bold text-muted-foreground">Loading...</h1>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container-custom py-16 text-center">
+        <h1 className="text-2xl font-bold text-muted-foreground">Error Loading Product</h1>
+        <p className="text-muted-foreground mb-4">ID: {id}</p>
+        <p className="text-muted-foreground mb-4">{error.message}</p>
         <Button onClick={() => navigate('/shop')} className="mt-4">
           Back to Shop
         </Button>
@@ -30,39 +56,69 @@ const ProductDetail = () => {
     );
   }
 
-  const relatedProducts = SAMPLE_PRODUCTS
+  if (!product && !isLoading) {
+    return (
+      <div className="container-custom py-16 text-center">
+        <h1 className="text-2xl font-bold text-muted-foreground">Product Not Found</h1>
+        <p className="text-muted-foreground mb-4">Product ID: {id}</p>
+        <Button onClick={() => navigate('/shop')} className="mt-4">
+          Back to Shop
+        </Button>
+      </div>
+    );
+  }
+
+  const relatedProducts = allProducts
     .filter(p => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 
   const handleAddToCart = () => {
-    if (!selectedSize) {
-      toast({
-        title: "Please select a size",
-        description: "Choose your preferred size before adding to cart.",
-        variant: "destructive",
-      });
+    if (product.stock <= 0) {
+      toast.error('Product is out of stock');
       return;
     }
 
     const cartItem = {
-      id: `${product.id}-${selectedSize}`,
+      id: `${product.id}`,
       productId: product.id,
       name: product.name,
-      slug: product.slug,
-      price: product.price,
-      size: selectedSize,
-      image: product.images[0],
-      maxStock: product.stock[selectedSize] || 0
+      price: parseFloat(product.price),
+      image: product.image,
+      maxStock: product.stock,
+      quantity
     };
 
     addToCart(cartItem);
-    toast({
-      title: "Added to cart!",
-      description: `${product.name} has been added to your cart.`,
-    });
+    toast.success(`${product.name} added to cart!`);
   };
 
-  const formatPrice = (price: number) => `₹${price.toLocaleString('en-IN')}`;
+  const handleWishlist = async () => {
+    if (!user) {
+      toast.error('Please login to add to wishlist');
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://127.0.0.1:8000/api/wishlist/', {
+        method: isWishlisted ? 'DELETE' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ product_id: product.id }),
+      });
+      
+      if (response.ok) {
+        setIsWishlisted(!isWishlisted);
+        toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
+      }
+    } catch (error) {
+      toast.error('Failed to update wishlist');
+    }
+  };
+
+  const formatPrice = (price: number | string) => `₹${typeof price === 'string' ? parseFloat(price) : price}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -77,93 +133,34 @@ const ProductDetail = () => {
           <div className="space-y-4">
             <div className="aspect-square bg-muted rounded-lg overflow-hidden">
               <img
-                src={product.images[selectedImageIndex] || product.images[0]}
+                src={product.image}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
             </div>
-            {product.images.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {product.images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
-                      selectedImageIndex === index ? 'border-primary' : 'border-transparent'
-                    }`}
-                  >
-                    <img
-                      src={image}
-                      alt={`${product.name} view ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              {product.brandInspiration && (
-                <p className="text-sm text-muted-foreground mb-2">{product.brandInspiration}</p>
-              )}
+              <p className="text-sm text-muted-foreground mb-2">{product.category}</p>
               <h1 className="text-3xl font-bold tracking-tight">{product.name}</h1>
               <div className="flex items-center gap-4 mt-2">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`w-4 h-4 ${i < Math.floor(product.rating) ? 'fill-primary text-primary' : 'text-muted-foreground'}`}
-                    />
-                  ))}
-                  <span className="text-sm text-muted-foreground ml-1">
-                    {product.rating} ({product.reviewCount} reviews)
-                  </span>
-                </div>
+                <Badge variant={product.featured ? 'default' : 'secondary'}>
+                  {product.featured ? 'Featured' : 'Regular'}
+                </Badge>
+                <span className="text-sm text-muted-foreground">
+                  Stock: {product.stock}
+                </span>
               </div>
             </div>
 
             {/* Price */}
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold">{formatPrice(product.price)}</span>
-              {product.mrp && (
-                <>
-                  <span className="text-xl text-muted-foreground line-through">
-                    {formatPrice(product.mrp)}
-                  </span>
-                  <Badge variant="secondary" className="bg-accent text-accent-foreground">
-                    {product.discountPercent}% OFF
-                  </Badge>
-                </>
-              )}
+              <span className="text-3xl font-bold">{formatPrice(parseFloat(product.price))}</span>
             </div>
 
-            <p className="text-muted-foreground">{product.shortDescription}</p>
-
-            {/* Size Selection */}
-            <div>
-              <h3 className="font-semibold mb-3">Size</h3>
-              <div className="flex gap-2 flex-wrap">
-                {product.sizes.map((size) => (
-                  <Button
-                    key={size}
-                    variant={selectedSize === size ? "default" : "outline"}
-                    onClick={() => setSelectedSize(size)}
-                    className="min-w-12"
-                    disabled={product.stock[size] === 0}
-                  >
-                    {size}
-                  </Button>
-                ))}
-              </div>
-              {selectedSize && product.stock[selectedSize] <= 5 && product.stock[selectedSize] > 0 && (
-                <p className="text-sm text-orange-600 mt-2">
-                  Only {product.stock[selectedSize]} left in stock!
-                </p>
-              )}
-            </div>
+            <p className="text-muted-foreground">{product.description}</p>
 
             {/* Quantity */}
             <div>
@@ -173,16 +170,18 @@ const ProductDetail = () => {
                   variant="outline"
                   size="icon"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={quantity <= 1}
                 >
-                  -
+                  <Minus className="w-4 h-4" />
                 </Button>
                 <span className="w-12 text-center font-medium">{quantity}</span>
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  disabled={quantity >= product.stock}
                 >
-                  +
+                  <Plus className="w-4 h-4" />
                 </Button>
               </div>
             </div>
@@ -193,13 +192,18 @@ const ProductDetail = () => {
                 onClick={handleAddToCart}
                 className="w-full"
                 size="lg"
+                disabled={product.stock <= 0}
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
-                Add to Cart
+                {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
               </Button>
               <div className="flex gap-2">
-                <Button variant="outline" size="icon">
-                  <Heart className="w-4 h-4" />
+                <Button 
+                  variant={isWishlisted ? 'default' : 'outline'} 
+                  size="icon"
+                  onClick={handleWishlist}
+                >
+                  <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
                 </Button>
                 <Button variant="outline" size="icon">
                   <Share2 className="w-4 h-4" />
@@ -233,7 +237,7 @@ const ProductDetail = () => {
           className="mt-16"
         >
           <h2 className="text-2xl font-bold mb-6">Product Details</h2>
-          <p className="text-muted-foreground leading-relaxed">{product.longDescription}</p>
+          <p className="text-muted-foreground leading-relaxed">{product.description}</p>
         </motion.div>
 
         {/* Related Products */}
@@ -250,17 +254,17 @@ const ProductDetail = () => {
                 <div 
                   key={relatedProduct.id}
                   className="group cursor-pointer"
-                  onClick={() => navigate(`/product/${relatedProduct.slug}`)}
+                  onClick={() => navigate(`/product/${relatedProduct.id}`)}
                 >
                   <div className="aspect-square bg-muted rounded-lg overflow-hidden mb-3">
                     <img
-                      src={relatedProduct.images[0]}
+                      src={relatedProduct.image}
                       alt={relatedProduct.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                     />
                   </div>
                   <h3 className="font-medium text-sm">{relatedProduct.name}</h3>
-                  <p className="text-sm font-bold">{formatPrice(relatedProduct.price)}</p>
+                  <p className="text-sm font-bold">{formatPrice(parseFloat(relatedProduct.price))}</p>
                 </div>
               ))}
             </div>

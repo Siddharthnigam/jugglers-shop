@@ -83,18 +83,18 @@ const Footer = () => {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                 <p className="text-muted-foreground text-sm">
-                  123 Fashion Street<br />
-                  Mumbai, Maharashtra 400001<br />
+                  Freeganj, Ujjain<br />
+                  Madhya Pradesh 456010<br />
                   India
                 </p>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                <p className="text-muted-foreground text-sm">+91 98765 43210</p>
+                <p className="text-muted-foreground text-sm">+91 7415159952</p>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-primary flex-shrink-0" />
-                <p className="text-muted-foreground text-sm">help@jugglers.in</p>
+                <p className="text-muted-foreground text-sm">jugglers.shop@gmail.com</p>
               </div>
             </div>
           </div>
@@ -114,7 +114,7 @@ const Footer = () => {
               </Link>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 Jugglers. All rights reserved. Made in India 🇮🇳
+              © 2024 Jugglers. All rights reserved. Made in India 🇮🇳 <br /> Created By Siddharth Nigam 
             </p>
           </div>
         </div>
