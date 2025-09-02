@@ -79,9 +79,9 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-50 to-orange-100">
       {/* Header Section */}
-      <section className="bg-hero-gradient text-white py-16">
+      <section className="bg-gradient-to-r from-orange-500 to-blue-600 text-white py-16">
         <div className="container-custom">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

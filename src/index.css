@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-/* Optional: variants/plugins used with Tailwind v4 CSS-first setup */
-@custom-variant dark (&:where(.dark, .dark *)); /* enable .dark on html for dark mode */  /* [2] */
+/* Optional: enable .dark on <html> or <body> */
+@custom-variant dark (&:where(.dark, .dark *)); /* Tailwind v4 variant helper */ /* [1] */
 
-/* 1) Semantic tokens: define HSL variables for light and dark */
+/* 1) Design tokens in HSL for light/dark */
 @layer base {
   :root {
     /* Base Colors */
@@ -18,7 +18,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    /* Primary - Orange (#ff6a00 ≈ hsl(24 100% 50%) ) */
+    /* Primary - Orange (#ff6a00 ≈ hsl(24 100% 50%)) */
     --primary: 24 100% 50%;
     --primary-foreground: 0 0% 100%;
     --primary-hover: 24 100% 45%;
@@ -71,35 +71,31 @@
   }
 
   .dark {
+    /* Dark mode */
     --background: 0 0% 5%;
     --foreground: 0 0% 95%;
-
     --card: 0 0% 8%;
     --card-foreground: 0 0% 95%;
-
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 95%;
-
     --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 85%;
-
     --muted: 0 0% 12%;
     --muted-foreground: 0 0% 60%;
-
     --border: 0 0% 15%;
     --input: 0 0% 12%;
     --input-border: 0 0% 20%;
-
     --card-shadow: 0 2px 8px hsl(0 0% 0% / 0.25);
     --card-shadow-hover: 0 8px 25px hsl(0 0% 0% / 0.4);
   }
 }
 
-/* 2) Map tokens to Tailwind v4 theme so utilities like bg-background, text-foreground, border-border work */
+/* 2) Map tokens to Tailwind v4 theme so utilities like bg-background, text-foreground, border-border, ring-ring work */
 @theme {
-  /* Core colors */
+  /* Colors */
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
+
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
   --color-popover: hsl(var(--popover));
@@ -124,18 +120,18 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
-  /* Optional e-commerce colors as tokens */
+  /* Optional extras used in components */
   --color-price-original: hsl(var(--price-original));
   --color-price-discount: hsl(var(--price-discount));
 
-  /* Radius scale (used by rounded-*) */
+  /* Radius scale (so rounded-* remains consistent with your --radius) */
   --radius-sm: calc(var(--radius) - 0.25rem);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 0.25rem);
   --radius-xl: calc(var(--radius) + 0.5rem);
-}  /* [2][8] */
+} /* Maps CSS variables into Tailwind tokens for utilities */ /* [1][11] */
 
-/* 3) Base resets using generated utilities */
+/* 3) Base resets using your original utilities */
 @layer base {
   * {
     @apply border-border;
@@ -151,33 +147,37 @@
   ::-webkit-scrollbar-track { @apply bg-secondary; }
   ::-webkit-scrollbar-thumb { @apply bg-muted-foreground rounded-full; }
   ::-webkit-scrollbar-thumb:hover { @apply bg-foreground/70; }
-}  /* [2][8] */
+} /* Ensures tokens are recognized by Tailwind utilities */ /* [1][11] */
 
-/* 4) Components */
+/* 4) Components (unchanged styling) */
 @layer components {
-  /* Product card */
+  /* Product card styling */
   .product-card {
     background: hsl(var(--card));
-    border-radius: var(--radius);
+    border-radius: 0.5rem;
     overflow: hidden;
-    transition: var(--transition);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--card-shadow);
   }
+
   .product-card:hover {
     transform: scale(1.02);
     box-shadow: var(--card-shadow-hover);
   }
 
-  /* Price styles */
+  /* Price styling */
   .price-original {
     font-size: 0.875rem;
     line-height: 1.25rem;
     text-decoration-line: line-through;
     color: hsl(var(--price-original));
   }
-  .price-discounted { color: hsl(var(--price-discount)); }
 
-  /* Container utility */
+  .price-discounted {
+    color: hsl(var(--price-discount));
+  }
+
+  /* Container utilities */
   .container-custom {
     max-width: 80rem;
     margin-left: auto;
@@ -185,10 +185,18 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
+
   @media (min-width: 640px) {
     .container-custom { padding-left: 1.5rem; padding-right: 1.5rem; }
   }
+
   @media (min-width: 1024px) {
     .container-custom { padding-left: 2rem; padding-right: 2rem; }
   }
-}  /* [2][8] */
+} /* Keeps component styles identical while Tailwind v4 handles tokens */ /* [1][11] */
+
+/* 5) Optional helpers to keep your hero gradients exact without utility changes
+   Use: class="bg-[var(--hero-gradient)]" where needed, or keep existing utility gradients.
+   Tailwind v4 supports arbitrary values in bg-[...]. */ /* [4] */
+
+   

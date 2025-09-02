@@ -29,9 +29,9 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-50 to-orange-100">
       {/* Hero Section */}
-      <section className="bg-hero-gradient text-white py-20">
+      <section className="bg-gradient-to-r from-orange-500 to-blue-600 text-white py-20">
         <div className="container-custom">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -151,7 +151,7 @@ const About = () => {
       </section>
 
       {/* Our Values Section */}
-      <section className="py-20 bg-primary text-white">
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-orange-500 text-white">
         <div className="container-custom">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -24,7 +24,7 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-hero-gradient overflow-hidden">
+      <section className="relative bg-gradient-to-br from-orange-500 via-orange-400 to-blue-600 overflow-hidden">
         {/* Background Video */}
         <div className="absolute inset-0 opacity-30">
           <video 
